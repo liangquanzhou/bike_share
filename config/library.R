@@ -4,4 +4,7 @@ library(leaflet)
 library(ggrepel)
 library(tibbletime)
 library(leaps)
+library(car)
 library(xaringan)
+library(DT)
+

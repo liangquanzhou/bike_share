@@ -10,6 +10,7 @@ colnames(station) <- c("id","name","lat","long","dock_count","city","installatio
 
 trip <- read_csv("data/201608_trip_data.csv")
 colnames(trip) <- c("id","duration","start_date","start_station_name","start_station_id","end_date","end_station_nanme","end_station_id","bike_id","subscription_type","zip_code")
+
 trip <- trip %>% 
   mutate(start_date = mdy_hm(start_date),
          end_date = mdy_hm(end_date))
@@ -20,7 +21,7 @@ trip<- trip %>%
          weekday = start_date %>% strftime("%u") %>% as.numeric) %>% 
   mutate(weekday = if_else(weekday < 6, "weekday", "weekend"))
 
-weather <- read_csv("data/201608_weather_data.csv")
+weather <- read_csv("data/201608_weather_data.csv") 
 # rename
 names(weather) <- 
   names(weather) %>% 
@@ -38,6 +39,9 @@ weather <- weather %>%
   mutate(precipitation_in = ifelse(is.na(precipitation_in), 
                                    0, precipitation_in))
 
+# only select the weather that for the SF. zip = 94107
+weather <- weather %>% 
+  filter(zip == 94107)
 
 ##  ............................................................................
 ##  Time - Based                                                            ####
@@ -140,11 +144,7 @@ trip %>%
 #   Location - Based                                                        ####
 
 # in this part only do analysis on San Jose
-station_id_san_jose <- station %>% 
-  filter(city == "San Jose") %>% 
-  select(id) %>% 
-  t %>% 
-  as.integer()
+station_id_san_jose <- station_in_city("San Jose")
 
 # add trip stat_long and end_long
 trip_san_jose <- trip %>% 
