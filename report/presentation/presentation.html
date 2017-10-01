@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Bay Area</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Team 2: Five States" />
+    <link href="libs/remark-css/example.css" rel="stylesheet" />
+    <script src="libs/htmlwidgets/htmlwidgets.js"></script>
+    <script src="libs/jquery/jquery.min.js"></script>
+    <script src="libs/datatables-binding/datatables.js"></script>
+    <link href="libs/dt-core/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <link href="libs/dt-core/css/jquery.dataTables.extra.css" rel="stylesheet" />
+    <script src="libs/dt-core/js/jquery.dataTables.min.js"></script>
+    <link href="libs/leaflet/leaflet.css" rel="stylesheet" />
+    <script src="libs/leaflet/leaflet.js"></script>
+    <link href="libs/leafletfix/leafletfix.css" rel="stylesheet" />
+    <link href="libs/leaflet-label/leaflet.label.css" rel="stylesheet" />
+    <script src="libs/leaflet-label/leaflet.label.js"></script>
+    <script src="libs/Proj4Leaflet/proj4-compressed.js"></script>
+    <script src="libs/Proj4Leaflet/proj4leaflet.js"></script>
+    <script src="libs/leaflet-binding/leaflet.js"></script>
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Bay Area
+## 🚴 <br/>Bike Share
+### Team 2: Five States
+### 2017/10/01
+
+---
+
+
+
+
+# Background
+
+- Bay Area Bike Share offers cheap, fast and on-demand service for the users in San Francisco who need commute to work or school, run errands and explore the city.  
+
+- How to utilize data to optimize the operation which in turn to streamline the process and supply chain in order to satisfy customers’ demands by analyzing the data that the company has would be the top priority of the company.
+
+- We have tracking the usage of the rented bike in the past years which makes it available to analyze by using the historical data.
+
+???
+
+here is some thing in the notes
+
+---
+
+# Objects and Approach
+
+1. Exploratory analysis:
+  
+  - When do people use the bike?
+  
+  - How long do people use the bike?
+  
+  - Which stations has more usage of bike?
+  
+2. Linear Regression:
+  How does the weather affect the bike usage?
+
+---
+
+# Data
+
+Data comes from [Ford GoBike](http://www.bayareabikeshare.com/datachallenge) open data source.
+
+Contains 4 tables:
+
+  1. station.csv
+  
+  2. trip.csv
+  
+  3. weather.csv
+  
+  4. status.csv 
+
+We use the data from 08/2015 - 08/2016
+
+---
+
+### station.csv
+
+67 records – station ID, name, latitude, longitude, dockcount, city, installation date
+
+<div id="htmlwidget-3eed8ae029eea6d42056" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3eed8ae029eea6d42056">{"x":{"filter":"none","fillContainer":false,"data":[[2,3,4,5,6,7,8,9,10,11],["San Jose Diridon Caltrain Station","San Jose Civic Center","Santa Clara at Almaden","Adobe on Almaden","San Pedro Square","Paseo de San Antonio","San Salvador at 1st","Japantown","San Jose City Hall","MLK Library"],[37.329732,37.330698,37.333988,37.331415,37.336721,37.333798,37.330165,37.348742,37.337391,37.335885],[-121.901782,-121.888979,-121.894902,-121.8932,-121.894074,-121.886943,-121.885831,-121.894715,-121.886995,-121.88566],[27,15,11,19,15,15,15,15,15,19],["San Jose","San Jose","San Jose","San Jose","San Jose","San Jose","San Jose","San Jose","San Jose","San Jose"],["8/6/2013","8/5/2013","8/6/2013","8/5/2013","8/7/2013","8/7/2013","8/5/2013","8/5/2013","8/6/2013","8/6/2013"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>station_id<\/th>\n      <th>name<\/th>\n      <th>lat<\/th>\n      <th>long<\/th>\n      <th>dockcount<\/th>\n      <th>landmark<\/th>\n      <th>installation<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":3,"scrollX":true,"dom":"tp","columnDefs":[{"className":"dt-right","targets":[0,2,3,4]}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[3,10,25,50,100]},"selection":{"mode":"multiple","selected":null,"target":"row"}},"evals":[],"jsHooks":[]}</script>
+
+
+---
+
+### trip.csv
+
+Approx. 314,000 records of individual trips
+
+<div id="htmlwidget-8b072563ddb8f80b59e9" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-8b072563ddb8f80b59e9">{"x":{"filter":"none","fillContainer":false,"data":[[913465,913466,913467,913468,913469,913470,913471,913472,913473,913474],[746,969,233,213,574,623,746,1038,424,633],["9/1/2015 0:10","9/1/2015 0:15","9/1/2015 0:15","9/1/2015 1:29","9/1/2015 1:33","9/1/2015 1:36","9/1/2015 2:15","9/1/2015 3:38","9/1/2015 4:23","9/1/2015 4:57"],["San Francisco Caltrain 2 (330 Townsend)","Clay at Battery","Davis at Jackson","Clay at Battery","Steuart at Market","San Jose Diridon Caltrain Station","Embarcadero at Bryant","Townsend at 7th","Market at 10th","Embarcadero at Bryant"],[69,41,42,41,74,2,54,65,67,54],["9/1/2015 0:23","9/1/2015 0:31","9/1/2015 0:19","9/1/2015 1:32","9/1/2015 1:42","9/1/2015 1:47","9/1/2015 2:27","9/1/2015 3:56","9/1/2015 4:30","9/1/2015 5:08"],["San Francisco City Hall","Washington at Kearny","Commercial at Montgomery","Steuart at Market","San Francisco Caltrain 2 (330 Townsend)","Japantown","Powell Street BART","Howard at 2nd","Townsend at 7th","Embarcadero at Sansome"],[58,46,45,74,69,9,39,63,65,60],[238,16,534,312,279,261,436,607,259,613],["Subscriber","Subscriber","Subscriber","Subscriber","Subscriber","Subscriber","Subscriber","Subscriber","Subscriber","Subscriber"],["94107","94133","94111","94107","94107","95112","94103","94107","94102","94105"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Trip ID<\/th>\n      <th>Duration<\/th>\n      <th>Start Date<\/th>\n      <th>Start Station<\/th>\n      <th>Start Terminal<\/th>\n      <th>End Date<\/th>\n      <th>End Station<\/th>\n      <th>End Terminal<\/th>\n      <th>Bike #<\/th>\n      <th>Subscriber Type<\/th>\n      <th>Zip Code<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":3,"scrollX":true,"dom":"tp","columnDefs":[{"className":"dt-right","targets":[0,1,4,7,8]}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[3,10,25,50,100]},"selection":{"mode":"multiple","selected":null,"target":"row"}},"evals":[],"jsHooks":[]}</script>
+
+---
+
+### weather.csv
+
+1,830 records of daily weather by city
+
+<div id="htmlwidget-2568cf23ddc4f9eb5661" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2568cf23ddc4f9eb5661">{"x":{"filter":"none","fillContainer":false,"data":[[2,3,4,5,6,7,8,9,10,11],["San Jose Diridon Caltrain Station","San Jose Civic Center","Santa Clara at Almaden","Adobe on Almaden","San Pedro Square","Paseo de San Antonio","San Salvador at 1st","Japantown","San Jose City Hall","MLK Library"],[37.329732,37.330698,37.333988,37.331415,37.336721,37.333798,37.330165,37.348742,37.337391,37.335885],[-121.901782,-121.888979,-121.894902,-121.8932,-121.894074,-121.886943,-121.885831,-121.894715,-121.886995,-121.88566],[27,15,11,19,15,15,15,15,15,19],["San Jose","San Jose","San Jose","San Jose","San Jose","San Jose","San Jose","San Jose","San Jose","San Jose"],["8/6/2013","8/5/2013","8/6/2013","8/5/2013","8/7/2013","8/7/2013","8/5/2013","8/5/2013","8/6/2013","8/6/2013"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>station_id<\/th>\n      <th>name<\/th>\n      <th>lat<\/th>\n      <th>long<\/th>\n      <th>dockcount<\/th>\n      <th>landmark<\/th>\n      <th>installation<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":3,"scrollX":true,"dom":"tp","columnDefs":[{"className":"dt-right","targets":[0,2,3,4]}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[3,10,25,50,100]},"selection":{"mode":"multiple","selected":null,"target":"row"}},"evals":[],"jsHooks":[]}</script>
+
+---
+class: inverse, center, middle
+
+# Exploratory Analysis
+
+---
+
+## Time and bike usage
+
+![](presentation_files/figure-html/unnamed-chunk-4-1.png)&lt;!-- --&gt;
+
+???
+with 1 year data - how does the bike usage affected the dates
+ - weekday and weekend will affect
+ - seems like season will affect, but actually is holiday (red dots with small value)
+
+---
+
+## Bike usage among a week
+
+![](presentation_files/figure-html/unnamed-chunk-5-1.png)&lt;!-- --&gt;
+
+---
+
+## Bike usage in a day
+
+![](presentation_files/figure-html/unnamed-chunk-6-1.png)&lt;!-- --&gt;
+
+???
+
+peak hours has the most usage
+
+will weekday/weekends affect the usage in a day?
+
+---
+
+## Bike usage in a day
+
+![](presentation_files/figure-html/unnamed-chunk-7-1.png)&lt;!-- --&gt;
+
+---
+
+## Trip duration 
+
+![](presentation_files/figure-html/unnamed-chunk-8-1.png)&lt;!-- --&gt;
+
+---
+
+## Locations
+
+<div id="htmlwidget-8b015ed58993224f46b2" style="width:100%;height:432px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-8b015ed58993224f46b2">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"maxNativeZoom":null,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"continuousWorld":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":null,"unloadInvisibleTiles":null,"updateWhenIdle":null,"detectRetina":false,"reuseTiles":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addMarkers","args":[[37.329732,37.330698,37.333988,37.331415,37.336721,37.333798,37.330165,37.348742,37.337391,37.335885,37.332808,37.339301,37.332692,37.333955,37.389218,37.394358,37.40694,37.395337,37.400443,37.385956,37.420909,37.443988,37.444521,37.429082,37.448598,37.4256839,37.783871,37.795001,37.79728,37.794231,37.795425,37.788975,37.799953,37.790302,37.795392,37.791464,37.787152,37.789756,37.792251,37.781752,37.77865,37.781332,37.80477,37.780526,37.785299,37.786978,37.782259,37.771058,37.774814,37.776619,37.784878,37.7766,37.776617,37.788446,37.781039,37.7979,37.794139,37.7913,37.786305,37.789625,37.352601,37.798541,37.342725,37.331957,37.332398,37.780148,37.785908],[-121.901782,-121.888979,-121.894902,-121.8932,-121.894074,-121.886943,-121.885831,-121.894715,-121.886995,-121.88566,-121.883891,-121.889937,-121.900084,-121.877349,-122.081896,-122.076713,-122.106758,-122.052476,-122.108338,-122.083678,-122.080623,-122.164759,-122.163093,-122.142805,-122.159504,-122.1377775,-122.408433,-122.39997,-122.398436,-122.402923,-122.404767,-122.403452,-122.398525,-122.390637,-122.394203,-122.391034,-122.388013,-122.394643,-122.397086,-122.405127,-122.418235,-122.418603,-122.403234,-122.390288,-122.396236,-122.398108,-122.392738,-122.402717,-122.418954,-122.417385,-122.401014,-122.39547,-122.39526,-122.408499,-122.411748,-122.405942,-122.394434,-122.399051,-122.404966,-122.400811,-121.905733,-122.400862,-121.895617,-121.88163,-121.890429,-122.403158,-122.408891],null,null,null,{"clickable":true,"draggable":false,"keyboard":true,"title":"","alt":"","zIndexOffset":0,"opacity":1,"riseOnHover":false,"riseOffset":250},null,null,null,null,["San Jose Diridon Caltrain Station","San Jose Civic Center","Santa Clara at Almaden","Adobe on Almaden","San Pedro Square","Paseo de San Antonio","San Salvador at 1st","Japantown","San Jose City Hall","MLK Library","SJSU 4th at San Carlos","St James Park","Arena Green / SAP Center","SJSU - San Salvador at 9th","Mountain View City Hall","Mountain View Caltrain Station","San Antonio Caltrain Station","Middlefield Light Rail Station","San Antonio Shopping Center","Castro Street and El Camino Real","Charleston Park/ North Bayshore Area","Palo Alto Caltrain Station","University and Emerson","California Ave Caltrain Station","Cowper at University","Park at Olive","Powell Street BART","Clay at Battery","Davis at Jackson","Commercial at Montgomery","Washington at Kearney","Post at Kearney","Embarcadero at Vallejo","Spear at Folsom","Harry Bridges Plaza (Ferry Building)","Embarcadero at Folsom","Embarcadero at Bryant","Temporary Transbay Terminal (Howard at Beale)","Beale at Market","5th at Howard","San Francisco City Hall","Golden Gate at Polk","Embarcadero at Sansome","2nd at Townsend","2nd at Folsom","Howard at 2nd","2nd at South Park","Townsend at 7th","South Van Ness at Market","Market at 10th","Yerba Buena Center of the Arts (3rd @ Howard)","San Francisco Caltrain 2 (330 Townsend)","San Francisco Caltrain (Townsend at 4th)","Powell at Post (Union Square)","Civic Center BART (7th at Market)","Grant Avenue at Columbus Avenue","Steuart at Market","Mechanics Plaza (Market at Battery)","Market at 4th","Market at Sansome","Santa Clara County Civic Center","Broadway St at Battery St","Ryland Park","5th S. at E. San Salvador St","S. Market st at Park Ave","5th St at Folsom St","Cyril Magnin St at Ellis St"],null,null]}],"limits":{"lat":[37.329732,37.80477],"lng":[-122.418954,-121.877349]}},"evals":[],"jsHooks":[]}</script>
+
+---
+
+## Bike usage in a city
+
+Take San Jose as an example
+![](presentation_files/figure-html/unnamed-chunk-10-1.png)&lt;!-- --&gt;
+
+---
+class: inverse, center, middle
+
+# Regression
+
+## How does the weather affect the bike usage?
+
+---
+
+### weather.csv
+
+
+```
+Observations: 1,830
+Variables: 24
+$ PDT                         &lt;chr&gt; "9/1/2015", "9/2/2015", "9/3/2015"...
+$ `Max TemperatureF`          &lt;int&gt; 75, 73, 70, 72, 79, 84, 91, 95, 93...
+$ `Mean TemperatureF`         &lt;int&gt; 67, 68, 65, 64, 65, 68, 73, 76, 77...
+$ `Min TemperatureF`          &lt;int&gt; 58, 62, 60, 55, 51, 52, 54, 57, 60...
+$ `Max Dew PointF`            &lt;int&gt; 58, 59, 57, 52, 53, 53, 56, 54, 58...
+$ `MeanDew PointF`            &lt;int&gt; 56, 56, 54, 50, 48, 47, 46, 46, 50...
+$ `Min DewpointF`             &lt;int&gt; 54, 54, 50, 48, 44, 31, 37, 38, 44...
+$ `Max Humidity`              &lt;int&gt; 84, 78, 84, 77, 89, 72, 67, 67, 73...
+$ `Mean Humidity`             &lt;int&gt; 67, 68, 69, 61, 60, 44, 42, 43, 47...
+$ `Min Humidity`              &lt;int&gt; 49, 57, 53, 44, 30, 16, 16, 19, 21...
+$ `Max Sea Level PressureIn`  &lt;dbl&gt; 29.93, 29.97, 29.94, 29.90, 30.00,...
+$ `Mean Sea Level PressureIn` &lt;dbl&gt; 29.89, 29.93, 29.89, 29.86, 29.95,...
+$ `Min Sea Level PressureIn`  &lt;dbl&gt; 29.86, 29.90, 29.83, 29.83, 29.90,...
+$ `Max VisibilityMiles`       &lt;int&gt; 10, 10, 10, 10, 10, 10, 10, 10, 10...
+$ `Mean VisibilityMiles`      &lt;int&gt; 10, 10, 10, 10, 10, 10, 10, 10, 10...
+$ `Min VisibilityMiles`       &lt;int&gt; 6, 10, 10, 7, 10, 10, 9, 10, 10, 1...
+$ `Max Wind SpeedMPH`         &lt;int&gt; 22, 23, 18, 20, 21, 14, 13, 14, 16...
+$ `Mean Wind SpeedMPH`        &lt;int&gt; 9, 12, 12, 10, 7, 5, 5, 6, 5, 6, 8...
+$ `Max Gust SpeedMPH`         &lt;int&gt; 26, 26, 25, 24, 24, 17, 15, 17, 18...
+$ PrecipitationIn             &lt;chr&gt; "0", "0", "0", "0", "0", "0", "0",...
+$ CloudCover                  &lt;int&gt; 2, 5, 2, 2, 2, 3, 1, 0, 0, 2, 4, 7...
+$ Events                      &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA...
+$ WindDirDegrees              &lt;int&gt; 245, 249, 250, 233, 289, 280, 307,...
+$ ZIP                         &lt;int&gt; 94107, 94107, 94107, 94107, 94107,...
+```
+
+---
+
+## Variable Selection
+
+Response variable: `num of trips`
+Possible predictor variables:
+
+- `weekday`
+- `mean_temperature_f`
+- `precipitation_in`
+- `mean_visibility_miles`
+- `mean_humidity`
+- `mean_wind_speed_mph`
+- `cloud_cover`
+- `events`
+
+Use `regsubsets` function in `leaps` package for variable selection. Use San Francisco data.
+
+---
+
+## Dagnostic
+
+![](presentation_files/figure-html/unnamed-chunk-12-1.png)&lt;!-- --&gt;
+
+???
+
+Residual Diagnostic:
+
+1. Residual vs fitted has a pattern - transform on Y
+
+1. qq plot - not normal - may be affected by extreme values
+
+---
+
+## Diagnostic
+
+![](presentation_files/figure-html/unnamed-chunk-13-1.png)&lt;!-- --&gt;
+
+???
+
+other factors could make model fail:
+
+Seperated by weekday/weekend may not accurate. Should include national holidays 
+
+---
+
+## Diagnostic
+
+Check weekdays with low usage
+
+```
+Observations: 18
+Variables: 2
+$ pdt       &lt;date&gt; 2015-09-07, 2015-11-26, 2015-11-27, 2015-12-21, 201...
+$ num_trips &lt;int&gt; 465, 121, 181, 545, 943, 956, 155, 167, 751, 794, 42...
+```
+
+Treat national holidays as weekend, and we can get the model:
+  
+???
+
+we should exclude holidays. 
+
+---
+
+## Final Model
+
+
+```
+
+Call:
+lm(formula = formula3, data = weather_holiday_adjust_frame %&gt;% 
+    mutate(num_trips = weather$num_trips))
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-22.1701  -2.4834   0.3127   3.0150  17.4536 
+
+Coefficients:
+                           Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)                18.68452    3.89332   4.799 2.34e-06 ***
+weekday1                  -35.56177    0.56699 -62.720  &lt; 2e-16 ***
+mean_temperature_f          0.36601    0.04113   8.899  &lt; 2e-16 ***
+mean_visibility_miles       1.53434    0.33088   4.637 4.95e-06 ***
+eventsRain                 -5.90986    0.78455  -7.533 4.05e-13 ***
+`eventsRain-Thunderstorm`  -5.76702    2.95714  -1.950   0.0519 .  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 5.008 on 360 degrees of freedom
+Multiple R-squared:  0.9241,	Adjusted R-squared:  0.923 
+F-statistic: 876.6 on 5 and 360 DF,  p-value: &lt; 2.2e-16
+```
+
+---
+
+## Final Model 
+
+![](presentation_files/figure-html/unnamed-chunk-16-1.png)&lt;!-- --&gt;
+
+---
+
+## Final Model
+
+`$$\sqrt{num\ of\ trips} = 18.685 - 35.562 weekend + 0.366 mean\ temperature +\\
+1.534mean\ visibility\ miles - 5.91 events\ Rain - 5.767 events\ Rain\ Thunderstorm$$`
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {window.dispatchEvent(new Event('resize'));});
+(function() {var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler"); if (!r) return; s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }"; d.head.appendChild(s);})();</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+  }
+});
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

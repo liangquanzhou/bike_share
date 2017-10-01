@@ -5,7 +5,8 @@ source("config/settings.R")
 station <- read_csv("data/201608_station_data.csv")
 station <- station %>%
   mutate(installation = mdy(installation)) %>% 
-  arrange(station_id)
+  arrange(station_id) %>% 
+  na.omit
 colnames(station) <- c("id","name","lat","long","dock_count","city","installation_date")
 
 trip <- read_csv("data/201608_trip_data.csv")
@@ -47,7 +48,7 @@ weather <- weather %>%
 ##  Time - Based                                                            ####
 
 # number of trips by day
-trip %>% 
+p1 <- trip %>% 
   as_tbl_time(index = start_date) %>%
   time_summarise(period = "daily",
                  num_trips = n()) %>% 
@@ -57,13 +58,13 @@ trip %>%
   mutate(weekday = if_else(weekday < 6, "weekday", "weekend")) %>% 
   ggplot(aes(start_date, num_trips, color = weekday)) +
   geom_point() +
-  geom_smooth()+
+  # geom_smooth()+
   labs(x = "Date",
        y = "Total Number of Bicycle Trips", 
        title = "Trips Each Day")
 
 # number of trips by week days
-trip %>% 
+p2 <- trip %>% 
   mutate(day = wday(start_date, label = T, abbr = F)) %>% 
   count(day) %>% 
   ggplot(aes(day, n)) +
@@ -73,7 +74,7 @@ trip %>%
        title = "Number of Trips across a Week")
 
 # number of trips in a day
-trip %>% 
+p3 <- trip %>% 
   mutate(time = hour(start_date) + minute(start_date)/60) %>% 
   ggplot(aes(time)) +
   geom_histogram(bins = 12*60) +
@@ -88,7 +89,7 @@ trip %>%
        title = "Number of Trips in a day")
 
 # number of trip in a day - facet: weekday
-trip %>% 
+p4 <- trip %>% 
   mutate(time = hour(start_date) + minute(start_date)/60,
          weekday = start_date %>% strftime("%u") %>% as.numeric) %>% 
   mutate(weekday = if_else(weekday < 6, "weekday", "weekend")) %>% 
@@ -102,7 +103,7 @@ trip %>%
 #   ____________________________________________________________________________
 #   Duration - Based                                                        ####
 
-# trip duration - in generall
+# trip duration - in general
 trip %>% 
   mutate(duration_minutes = duration/60) %>% 
   ggplot(aes(duration_minutes)) +
@@ -113,7 +114,7 @@ trip %>%
        title = "Trip Duration")
 
 # trip duration - facet: weekday
-trip %>% 
+p5 <- trip %>% 
   mutate(duration_minutes = duration/60,
          weekday = start_date %>% strftime("%u") %>% as.numeric) %>% 
   mutate(weekday = if_else(weekday < 6, "weekday", "weekend")) %>% 
@@ -126,7 +127,7 @@ trip %>%
   facet_wrap(~weekday, scales = "free", nrow = 2)
 
 # mean trips duration ~ weekday
-trip %>% 
+p6 <- trip %>% 
   mutate(duration_minutes = duration/60, 
          weekday = start_date %>% strftime("%u") %>% as.numeric) %>% 
   mutate(weekday = if_else(weekday < 6, "weekday", "weekend")) %>% 
@@ -140,11 +141,16 @@ trip %>%
        y = "Mean Trip Duration",
        title = "Mean Trip Duration ~ Weekdays")
 
+p56 <- grid.arrange(p5, p6, ncol = 1)
+
 #   ____________________________________________________________________________
 #   Location - Based                                                        ####
 
-# in this part only do analysis on San Jose
+# stations in each city
 station_id_san_jose <- station_in_city("San Jose")
+station_id_san_francisco <- station_in_city("San Francisco")
+station_id_mountain_view <- station_in_city("Mountain View")
+station_in_palo_alto <- station_in_city("Palo Alto")
 
 # add trip stat_long and end_long
 trip_san_jose <- trip %>% 
@@ -166,7 +172,7 @@ station_san_jose <- station %>%
             by = c("id" = "start_station_id"))
 
 # number of trips between stations in San Jose
-g <- 
+p7 <- 
   ggplot(trip_san_jose) +
   geom_segment(aes(x=start_long, xend=end_long, y=start_lat, yend=end_lat, 
                    size=num_trip, colour=num_trip, alpha=num_trip)) +
@@ -183,30 +189,29 @@ g <-
   scale_size(limits=c(0, max(trip_san_jose$num_trip)), guide=FALSE) +
   coord_fixed() +
   theme_void()
-  # theme(axis.line=element_blank(),
-  #       axis.text.x=element_blank(),
-  #       axis.text.y=element_blank(),
-  #       axis.ticks=element_blank(),
-  #       axis.title.x=element_blank(),
-  #       axis.title.y=element_blank(),
-  #       panel.grid=element_blank(),
-  #       panel.border=element_blank())
-g
 
 # using leaflet
-l <- 
+l8 <- 
   leaflet(station) %>%
   addTiles() %>%  # Add default OpenStreetMap map tiles
   addMarkers(lng = ~ long, lat = ~ lat, label = ~ name)
-  # addCircleMarkers(
-  #   radius = ~ num_trip*0.02,
-  #   stroke = FALSE, 
-  #   fillOpacity = 0.5,
-  #   label = ~ name
-  # ) %>% 
-  # addPolylines(data = trip_san_jose,
-  #              lng = ~ as.vector(rbind(start_long, end_long)),
-  #              lat = ~ as.vector(rbind(start_lat, end_lat)),
-  #              color = "grey"
-  #                )
-l
+
+MapSanJose <- get_map(location = c(mean(station_san_jose$long) ,mean(station_san_jose$lat)), zoom = 14)
+
+p9 <- ggmap(MapSanJose, extent = "panel", ylab = "Latitude", xlab = "Longitude",darken = 0.1) +
+  geom_segment(data = trip_san_jose, aes(x=start_long, xend=end_long, y=start_lat, yend=end_lat, 
+                   size=num_trip, colour=num_trip, alpha=num_trip)) +
+  geom_point(data=station_san_jose, aes(x=long, y=lat), size=4) +
+  geom_text_repel(data=station_san_jose, 
+                  aes(x=long, y=lat, label=name), size=4) +
+  theme_light(base_size=10) +
+  theme(legend.position = "bottom") +
+  xlab("") +
+  ylab("") +
+  scale_colour_gradientn(colors=c("#dddddd", "#002ba3"), 
+                         limits=c(0, max(trip_san_jose$num_trip)), 
+                         name="Number of Trips") +
+  scale_alpha(limits=c(0, max(trip_san_jose$num_trip)), guide=FALSE) +
+  scale_size(limits=c(0, max(trip_san_jose$num_trip)), guide=FALSE) +
+  coord_fixed() 
+

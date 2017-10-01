@@ -1,17 +1,16 @@
+source("src/EDA.R")
 # linear regression on num_of_trips ~ weather variables
-# numbers of trip every day in SF
-station_id_sf <- station_in_city("San Francisco")
 
 # daily trip numbers in SF
-trip_daily <- trip %>% 
-  filter(start_station_id %in% station_id_sf) %>% 
+trip_daily_san_francisco <- trip %>% 
+  filter(start_station_id %in% station_id_san_francisco) %>% 
   as_tbl_time(index = start_date) %>% 
   time_summarise(period = "daily",
                  num_trips = n()) %>% 
   mutate(start_date = as.Date(start_date))
 
 weather <- weather %>% 
-  left_join(trip_daily, by = c("pdt" = "start_date"))
+  left_join(trip_daily_san_francisco, by = c("pdt" = "start_date"))
 
 weather <- weather %>% 
   mutate(day_of_week = pdt %>% strftime("%A"),
@@ -75,13 +74,13 @@ par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
 plot(fit)
 
 # holiday may affect
-weather %>% 
+p10 <- weather %>% 
   ggplot(aes(x = pdt, y = num_trips, color = events)) +
   geom_point(aes(shape = weekday, size = precipitation_in)) +
   scale_color_brewer(palette = "Set1")
 
 # days near holidays have a lower num_trips
-weather %>% 
+w1 <- weather %>% 
   filter(weekday == "0", num_trips < 1000) %>% 
   select(pdt, num_trips)
 
@@ -116,7 +115,10 @@ fit_holiday_adjust <- lm(data = weather_holiday_adjust_frame %>%
                            mutate(num_trips = weather$num_trips), 
                          formula = formula3)
 
-summary(fit_holiday_adjust)
+summary_fit_holiday_adjust <- summary(fit_holiday_adjust)
 par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
 plot(fit_holiday_adjust)
+
+
+
 

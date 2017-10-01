@@ -1,7 +1,8 @@
 README
 
 FILE LIST
-1) 201608_status_data.csv – approx. 36 million records of bike and dock availability by minute
+1) 201608_status_data.csv – 
+
 2) 201608_station_data.csv – 67 records – station ID, name, latitude, longitude, dockcount, city, installation date
 3) 201608_trip_data.csv – approx. 314,000 records of individual trips
 4) 201608_weather_data.csv – 1,830 records of daily weather by city
