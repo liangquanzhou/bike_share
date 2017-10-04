@@ -207,6 +207,7 @@ weather %>% glimpse
 ## Variable Selection
 
 Response variable: `num of trips`
+
 Possible predictor variables:
 
 - `weekday`
@@ -222,7 +223,7 @@ Use `regsubsets` function in `leaps` package for variable selection. Use San Fra
 
 ---
 
-## Dagnostic
+## Diagnostic
 
 ```{r}
 par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
@@ -261,7 +262,10 @@ w1 %>% glimpse
 ```
 
 Treat national holidays as weekend, and we can get the model:
-  
+
+$$\sqrt{num\ of\ trips} = 18.685 - 35.562 weekend + 0.366 mean\ temperature +\\
+1.534mean\ visibility\ miles - 5.91 events\ Rain - 5.767 events\ Rain\ Thunderstorm$$
+
 ???
 
 we should exclude holidays. 
@@ -282,11 +286,3 @@ summary(fit_holiday_adjust)
 par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
 plot(fit_holiday_adjust)
 ```
-
----
-
-## Final Model
-
-$$\sqrt{num\ of\ trips} = 18.685 - 35.562 weekend + 0.366 mean\ temperature +\\
-1.534mean\ visibility\ miles - 5.91 events\ Rain - 5.767 events\ Rain\ Thunderstorm$$
-

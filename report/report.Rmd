@@ -1,0 +1,239 @@
+---
+title: "Bay Area Bike Share"
+author: "Group 2: Five States"
+date: "10/3/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning = F, message = F, comment = "")
+library(tidyverse)
+library(rmarkdown)
+library(knitr)
+```
+
+# Background
+
+## Introduction
+
+Bay Area Bike Share offers cheap, fast and on-demand service for the users in San Francisco who need commute to work or school, run errands and explore the city.
+
+How to utilize data to optimize the operation which in turn to streamline the process and supply chain in order to satisfy customers’ demands by analyzing the data that the company has would be the top priority of the company.
+
+We have tracking the usage of the rented bike in the past years which makes it available to analyze by using the historical data.
+
+## Objects and Approach
+
+1. Exploratory analysis:
+  
+  - When do people use the bike?
+  
+  - How long do people use the bike?
+  
+  - Which stations has more usage of bike?
+  
+2. Linear Regression: How does the weather affect the bike usage?
+
+## Data
+
+Data comes from [Ford GoBike](http://www.bayareabikeshare.com/datachallenge) open data source.
+
+Contains 4 tables:
+
+  1. station.csv
+  
+  2. trip.csv
+  
+  3. weather.csv
+  
+  4. status.csv 
+
+We use the data from 08/2015 - 08/2016. And in this analysis we did not include the status data, which is the status of each bike station in every minute.
+
+Take look at the datatables: 
+
+#### station.csv
+
+67 records – station ID, name, latitude, longitude, dockcount, city, installation date
+
+```{r}
+read_csv("./../data/201608_station_data.csv", n_max = 10) %>%  
+  DT::datatable(
+    head(., 10),
+    fillContainer = F, options = list(pageLength = 3, scrollX = T, dom = "tp"),
+    rownames = F
+  )
+```
+
+#### trip.csv
+
+Approx. 314,000 records of individual trips
+
+```{r}
+read_csv("./../data/201608_trip_data.csv", n_max = 10) %>% 
+  DT::datatable(
+    head(., 10),
+    fillContainer = F, options = list(pageLength = 3, scrollX = T, dom = "tp"),
+    rownames = F
+  )
+```
+
+#### weather.csv
+
+1,830 records of daily weather by city
+
+```{r}
+read_csv("./../data/201608_weather_data.csv", n_max = 10) %>% 
+  DT::datatable(
+    head(., 10),
+    fillContainer = F, options = list(pageLength = 3, scrollX = T, dom = "tp"),
+    rownames = F
+  )
+```
+
+# Exploratory Analysis
+
+### Time and bike usage
+
+First of all, with all trips data, we can calculate usage by day and get:
+```{r}
+read_chunk('../src/Regression.R')
+p1
+```
+
+In this plot we can see how does the bike usage affected the dates. With 1 year data: 
+ - The usage in weekday and weekend significantly different. 
+ - Seems like that season will affect the usage as well. (which actually is holiday, and we will mention this in regression analysis)
+
+### Bike usage among a week
+
+More intuitively, we can calculate total number of trips of each day in a week: 
+```{r}
+p2
+```
+Clearly, weekends has a low usage.
+
+### Bike usage in a day
+
+Give the bike usage of each day, one may also curious about how does the usage change in different times in a day:
+```{r}
+p3
+```
+We can see that peak hours has the most usage. But this might be too general. Will weekday/weekends also affect the usage in different times in a day?
+
+The answer is yes:
+```{r}
+p4
+```
+So we cound conlude that people are likely use bike as a transportation to their office in weekdays, and just riding for fun during the weekend.
+
+### Trip duration 
+
+Then immediately, one may want to find out if the durations of usage in weekdays and weekends will differ:
+```{r}
+gridExtra::grid.arrange(p5, p6, ncol = 1)
+```
+The result also confirmed out guess: people are buzy in weekdays and mainly use bike to commute, but they have more time enjoy riding in weekends. 
+
+### Locations
+
+Bike stations are avaliable in 4 cities: San Francisco, San Jose, Mountain View, and Palo Alto. Here are the locations:
+```{r out.width='100%', fig.height=6, eval=require('leaflet')}
+l8
+```
+
+### Bike usage in a city
+Given the bike station locations, and in trip data, we know where each trip started and ended, we can explore which station or what routes are more popular.
+
+Take San Jose as an example:
+```{r}
+p7
+```
+
+# Regression
+
+In this part we want to know how does the weather affect the bike usage? Give the weather data:
+```{r}
+t <- read_csv("./../data/201608_weather_data.csv") %T>% glimpse
+```
+More specificly, we want to conduct a multiple linear regression between the number of trips in a day and weather-realted variables. In this model we only use San Francisco data, which has the most usage among 4 cities.
+
+## 1. Variable Selection
+
+The `weather` data has `r ncol(t)` variables, and many of them are obviously correlated, e.g. `Max TemperatureF`, `Mean TemperatureF` and `Min TemperatureF`, 
+we seleted 8 initlal predictor variables:
+
+- `weekday`
+- `mean_temperature_f`
+- `precipitation_in`
+- `mean_visibility_miles`
+- `mean_humidity`
+- `mean_wind_speed_mph`
+- `cloud_cover`
+- `events`
+
+and the response variable is `num of trips`. 
+
+Use `regsubsets` function in `leaps` package for variable selection:
+
+Initial formula:
+```{r}
+formula1
+```
+
+Choose the model with the min [Mallows's $C_{p}$](https://en.wikipedia.org/wiki/Mallows%27s_Cp):
+
+```{r}
+s1$which[which.min(s1$cp),]
+```
+(We can see that here dummy variables are created for categorical variables.)
+
+And we can get the formula whose corresponded model has min $C_{p}$:
+
+```{r}
+formula2
+```
+
+## 2. Residual Diagnostic
+
+Use selected formula fit the model, we can get
+
+```{r}
+summary(fit)
+par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
+plot(fit)
+```
+
+For residual Diagnostic, we can conclude:
+
+1. Residual vs fitted has a pattern - need transform on Y
+
+1. qq plot shows residuals not normal - indicates that the model was affected by extreme values
+
+Same as the bike usage plot we have in the beginning, if we add weather events and precipitation (in inches):
+```{r}
+p10
+```
+
+Furthermore, if we check weekdays with low usage (extreme values):
+```{r}
+w1
+```
+
+We can find that many of these days are national holidays or days around national holidays. So seperating days by weekday/weekend may not accurate.
+
+Treat national holidays also as weekend, and do $Y = \sqrt{Y}$ transformation on response varible, and using the same variable selection, then we can get the final model: 
+
+$$
+\sqrt{num\ of\ trips} = 18.685 - 35.562 weekend + 0.366 mean\ temperature +\\
+1.534mean\ visibility\ miles - 5.91 events\ Rain - 5.767 events\ Rain\ Thunderstorm
+$$
+Run diagnostic:
+
+```{r}
+summary(fit_holiday_adjust)
+par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
+plot(fit_holiday_adjust)
+```
+
+Much better.

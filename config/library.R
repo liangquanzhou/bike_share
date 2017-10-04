@@ -1,5 +1,6 @@
 library(tidyverse)
 library(lubridate)
+library(magrittr)
 library(leaflet)
 library(gridExtra)
 library(ggmap)

@@ -43,12 +43,12 @@ formula1 <- formula(
     events
 )
 
-l <- regsubsets(data = weather, formula1, nvmax = 15)
-s <- summary(l)
+l1 <- regsubsets(data = weather, formula1, nvmax = 15)
+s1 <- summary(l1)
 # data.frame(s$outmat, RSS = s$rss, R2 = s$rsq, Cp = s$cp, BIC = s$bic)
 # s$which
-s$cp
-s$which[which.min(s$cp),]
+s1$cp
+s1$which[which.min(s1$cp),]
 
 # after variable selection, fit the linear model on weather data
 # fit model
