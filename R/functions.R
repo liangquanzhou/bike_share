@@ -1,10 +1,8 @@
 # all station ids in a city
 station_in_city <- function(cityname) {
   station %>% 
-    filter(city == cityname) %>% 
-    select(id) %>% 
-    t %>% 
-    as.integer()
+    filter(city == cityname) %$%
+    id
 }
 
 # holidays in a year

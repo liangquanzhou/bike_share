@@ -96,12 +96,14 @@ read_csv("./../data/201608_weather_data.csv", n_max = 10) %>%
 ### Time and bike usage
 
 First of all, with all trips data, we can calculate usage by day and get:
+
 ```{r}
 read_chunk('../src/Regression.R')
 p1
 ```
 
 In this plot we can see how does the bike usage affected the dates. With 1 year data: 
+
  - The usage in weekday and weekend significantly different. 
  - Seems like that season will affect the usage as well. (which actually is holiday, and we will mention this in regression analysis)
 
@@ -111,41 +113,51 @@ More intuitively, we can calculate total number of trips of each day in a week:
 ```{r}
 p2
 ```
+
 Clearly, weekends has a low usage.
 
 ### Bike usage in a day
 
 Give the bike usage of each day, one may also curious about how does the usage change in different times in a day:
+
 ```{r}
 p3
 ```
+
 We can see that peak hours has the most usage. But this might be too general. Will weekday/weekends also affect the usage in different times in a day?
 
 The answer is yes:
+
 ```{r}
 p4
 ```
+
 So we cound conlude that people are likely use bike as a transportation to their office in weekdays, and just riding for fun during the weekend.
 
 ### Trip duration 
 
 Then immediately, one may want to find out if the durations of usage in weekdays and weekends will differ:
+
 ```{r}
 gridExtra::grid.arrange(p5, p6, ncol = 1)
 ```
+
 The result also confirmed out guess: people are buzy in weekdays and mainly use bike to commute, but they have more time enjoy riding in weekends. 
 
 ### Locations
 
 Bike stations are avaliable in 4 cities: San Francisco, San Jose, Mountain View, and Palo Alto. Here are the locations:
+
 ```{r out.width='100%', fig.height=6, eval=require('leaflet')}
 l8
 ```
 
 ### Bike usage in a city
+
 Given the bike station locations, and in trip data, we know where each trip started and ended, we can explore which station or what routes are more popular.
 
 Take San Jose as an example:
+
 ```{r}
 p7
 ```
@@ -153,6 +165,7 @@ p7
 # Regression
 
 In this part we want to know how does the weather affect the bike usage? Give the weather data:
+
 ```{r}
 t <- read_csv("./../data/201608_weather_data.csv") %T>% glimpse
 ```
@@ -160,8 +173,9 @@ More specificly, we want to conduct a multiple linear regression between the num
 
 ## 1. Variable Selection
 
-The `weather` data has `r ncol(t)` variables, and many of them are obviously correlated, e.g. `Max TemperatureF`, `Mean TemperatureF` and `Min TemperatureF`, 
-we seleted 8 initlal predictor variables:
+The `weather` data has `r ncol(t)` variables, and many of them are obviously correlated, e.g. `Max TemperatureF`, `Mean TemperatureF` and `Min TemperatureF`. 
+
+We seleted 8 initlal predictor variables:
 
 - `weekday`
 - `mean_temperature_f`
@@ -177,6 +191,7 @@ and the response variable is `num of trips`.
 Use `regsubsets` function in `leaps` package for variable selection:
 
 Initial formula:
+
 ```{r}
 formula1
 ```
@@ -186,6 +201,7 @@ Choose the model with the min [Mallows's $C_{p}$](https://en.wikipedia.org/wiki/
 ```{r}
 s1$which[which.min(s1$cp),]
 ```
+
 (We can see that here dummy variables are created for categorical variables.)
 
 And we can get the formula whose corresponded model has min $C_{p}$:
@@ -211,11 +227,13 @@ For residual Diagnostic, we can conclude:
 1. qq plot shows residuals not normal - indicates that the model was affected by extreme values
 
 Same as the bike usage plot we have in the beginning, if we add weather events and precipitation (in inches):
+
 ```{r}
 p10
 ```
 
 Furthermore, if we check weekdays with low usage (extreme values):
+
 ```{r}
 w1
 ```
