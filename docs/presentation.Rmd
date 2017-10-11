@@ -31,6 +31,9 @@ library(DT)
 
 - We have tracking the usage of the rented bike in the past years which makes it available to analyze by using the historical data.
 
+.footnote[
+  Team member: Peng Gong, Qiaozhi Jiang, Xinyu Mou, Zhanfeng Shen, Liangquan Zhou
+]
 ???
 
 here is some thing in the notes
@@ -75,7 +78,7 @@ We use the data from 08/2015 - 08/2016
 67 records – station ID, name, latitude, longitude, dockcount, city, installation date
 
 ```{r}
-station <- read_csv("./../../data/201608_station_data.csv") 
+station <- read_csv("./../data/201608_station_data.csv") 
 DT::datatable(
   head(station, 10),
   fillContainer = F, options = list(pageLength = 3, scrollX = T, dom = "tp"),
@@ -91,7 +94,7 @@ DT::datatable(
 Approx. 314,000 records of individual trips
 
 ```{r}
-trip <- read_csv("./../../data/201608_trip_data.csv")
+trip <- read_csv("./../data/201608_trip_data.csv")
 DT::datatable(
   head(trip, 10),
   fillContainer = F, options = list(pageLength = 3, scrollX = T, dom = "tp"),
@@ -106,7 +109,7 @@ DT::datatable(
 1,830 records of daily weather by city
 
 ```{r}
-weather <- read_csv("./../../data/201608_weather_data.csv")
+weather <- read_csv("./../data/201608_weather_data.csv")
 DT::datatable(
   head(station, 10),
   fillContainer = F, options = list(pageLength = 3, scrollX = T, dom = "tp"),
@@ -258,8 +261,14 @@ Seperated by weekday/weekend may not accurate. Should include national holidays
 
 Check weekdays with low usage
 ```{r}
-w1 %>% glimpse
+DT::datatable(
+  w1 %>% slice(1:18),
+  fillContainer = F, options = list(pageLength = 5, scrollY = T, dom = "tp"),
+  rownames = F
+)
 ```
+
+--
 
 Treat national holidays as weekend, and we can get the model:
 
@@ -286,3 +295,8 @@ summary(fit_holiday_adjust)
 par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
 plot(fit_holiday_adjust)
 ```
+
+---
+class: inverse, center, middle
+
+# Thank You!
