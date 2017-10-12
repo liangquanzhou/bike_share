@@ -50,7 +50,7 @@ Contains 4 tables:
 
 We use the data from 08/2015 - 08/2016. And in this analysis we did not include the status data, which is the status of each bike station in every minute.
 
-Take look at the datatables: 
+Take look at the data tables: 
 
 #### station.csv
 
@@ -132,21 +132,21 @@ The answer is yes:
 p4
 ```
 
-So we cound conlude that people are likely use bike as a transportation to their office in weekdays, and just riding for fun during the weekend.
+So we could conclude that people are likely use bike as a transportation to their office in weekdays, and just riding for fun during the weekend.
 
 ### Trip duration 
 
-Then immediately, one may want to find out if the durations of usage in weekdays and weekends will differ:
+Then immediately, one may want to find out if the duration of usage in weekdays and weekends will differ:
 
 ```{r}
 gridExtra::grid.arrange(p5, p6, ncol = 1)
 ```
 
-The result also confirmed out guess: people are buzy in weekdays and mainly use bike to commute, but they have more time enjoy riding in weekends. 
+The result also confirmed out guess: people are busy in weekdays and mainly use bike to commute, but they have more time enjoy riding in weekends. 
 
 ### Locations
 
-Bike stations are avaliable in 4 cities: San Francisco, San Jose, Mountain View, and Palo Alto. Here are the locations:
+Bike stations are available in 4 cities: San Francisco, San Jose, Mountain View, and Palo Alto. Here are the locations:
 
 ```{r out.width='100%', fig.height=6, eval=require('leaflet')}
 l8
@@ -169,13 +169,13 @@ In this part we want to know how does the weather affect the bike usage? Give th
 ```{r}
 t <- read_csv("./../data/201608_weather_data.csv") %T>% glimpse
 ```
-More specificly, we want to conduct a multiple linear regression between the number of trips in a day and weather-realted variables. In this model we only use San Francisco data, which has the most usage among 4 cities.
+More specifically, we want to conduct a multiple linear regression between the number of trips in a day and weather-related variables. In this model we only use San Francisco data, which has the most usage among 4 cities.
 
 ## 1. Variable Selection
 
 The `weather` data has `r ncol(t)` variables, and many of them are obviously correlated, e.g. `Max TemperatureF`, `Mean TemperatureF` and `Min TemperatureF`. 
 
-We seleted 8 initlal predictor variables:
+We select 8 initial predictor variables:
 
 - `weekday`
 - `mean_temperature_f`
@@ -238,9 +238,9 @@ Furthermore, if we check weekdays with low usage (extreme values):
 w1
 ```
 
-We can find that many of these days are national holidays or days around national holidays. So seperating days by weekday/weekend may not accurate.
+We can find that many of these days are national holidays or days around national holidays. So separating days by weekday/weekend may not accurate.
 
-Treat national holidays also as weekend, and do $Y = \sqrt{Y}$ transformation on response varible, and using the same variable selection, then we can get the final model: 
+Treat national holidays also as weekend, and do $Y = \sqrt{Y}$ transformation on response variable, and using the same variable selection, then we can get the final model: 
 
 $$
 \sqrt{num\ of\ trips} = 18.685 - 35.562 weekend + 0.366 mean\ temperature +\\
@@ -254,4 +254,4 @@ par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
 plot(fit_holiday_adjust)
 ```
 
-Much better.
+We can see that the pattern of `residual ~ fitted` is not significant as before. Residual QQ-plot is still shows somewhat long-tail, but also better than before. 
