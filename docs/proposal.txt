@@ -1,8 +1,0 @@
-Objective:
-Find out what is the main route for the users would like to use the bike.
-
-Methodology:
-Using data visualization packages in R to visualiza the popularity among stations and routes.
-
-
-
