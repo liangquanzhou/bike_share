@@ -48,10 +48,10 @@ weather <- weather %>%
 ##  Time - Based                                                            ####
 
 # number of trips by day
-p1 <- trip %>% 
-  as_tbl_time(index = start_date) %>%
-  time_summarise(period = "daily",
-                 num_trips = n()) %>% 
+p1 <- trip %>%
+  mutate(start_date = as.Date(start_date)) %>% 
+  group_by(start_date) %>%
+  summarise(num_trips = n()) %>% 
   mutate(day_of_week = start_date %>% strftime("%A"),
          week_nr = start_date %>% strftime("%W"),
          weekday = start_date %>% strftime("%u") %>% as.numeric) %>% 

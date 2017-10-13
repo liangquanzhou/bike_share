@@ -4,9 +4,9 @@ source("src/EDA.R")
 # daily trip numbers in SF
 trip_daily_san_francisco <- trip %>% 
   filter(start_station_id %in% station_id_san_francisco) %>% 
-  as_tbl_time(index = start_date) %>% 
-  time_summarise(period = "daily",
-                 num_trips = n()) %>% 
+  mutate(start_date = as.Date(start_date)) %>% 
+  group_by(start_date) %>% 
+  summarise(num_trips = n()) %>% 
   mutate(start_date = as.Date(start_date))
 
 weather <- weather %>% 
