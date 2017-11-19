@@ -5,3 +5,5 @@
 README.md
 .csv
 .DS_Store
+packrat/lib*/
+packrat/src/
